@@ -1,5 +1,7 @@
-🏛️ Reto 01: Expected Credit Loss
+## 🏛️ Reto 01: Expected Credit Loss
+
 Este mes vais a poneros en la piel de un equipo de modelización de riesgo de crédito en un banco. El Comité de Riesgos os ha pasado una cartera de préstamos y os ha enviado este correo en donde os pide una cosa muy concreta:
+<br>
 Buenos días, 
 Necesitamos calcular la pérdida esperada de la nueva cartera que acabamos de adquirir. Estos resultados se utilizarán para las provisiones y los tendrá que validar el regulador, así que debemos ser conservadores para evitar sanciones potenciales.
 Necesitamos el dato listo para el Comité del 17 de octubre. Adjuntamos los datos que disponemos de la cartera.
