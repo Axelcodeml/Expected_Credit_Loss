@@ -1,0 +1,18 @@
+# Ignorar carpetas de datos pesados
+data/
+
+models/*.csv
+#models/*.pkl
+models/*.h5
+
+# Ignorar el entorno virtual de Python
+.venv/
+venv/
+env/
+
+# Ignorar archivos temporales de Jupyter Notebooks
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Archivos de configuración local y credenciales secretas
+.env 
