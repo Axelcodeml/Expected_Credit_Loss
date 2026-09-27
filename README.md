@@ -1,7 +1,5 @@
-## 🏛️ Reto 01: Expected Credit Loss
-
+🏛️ Reto 01: Expected Credit Loss
 Este mes vais a poneros en la piel de un equipo de modelización de riesgo de crédito en un banco. El Comité de Riesgos os ha pasado una cartera de préstamos y os ha enviado este correo en donde os pide una cosa muy concreta:
-<br>
 Buenos días, 
 Necesitamos calcular la pérdida esperada de la nueva cartera que acabamos de adquirir. Estos resultados se utilizarán para las provisiones y los tendrá que validar el regulador, así que debemos ser conservadores para evitar sanciones potenciales.
 Necesitamos el dato listo para el Comité del 17 de octubre. Adjuntamos los datos que disponemos de la cartera.
@@ -15,24 +13,32 @@ Son dos ficheros: X.csv (variables disponibles para la modelización) y target.c
 Variables de originación (disponibles en el momento de conceder el préstamo ~37 en total): importe financiado, plazo, tipo de interés, grade, ingresos anuales, situación de vivienda, antigüedad laboral, finalidad del préstamo, estado/región, ratio cuota-ingresos, líneas de crédito abiertas, morosidad previa, consultas de crédito recientes, saldo y uso del revolving, antigüedad de la primera línea de crédito, fecha de emisión, método de desembolso, entre otras.
 Variables de desempeño (posteriores a la concesión, construidas a partir del histórico de pagos): principal recibido, intereses recibidos, comisiones por mora recibidas, y principal pendiente.
 Este segundo grupo es la clave: son las que nos van a permitir reconstruir cuánto se ha cobrado realmente de cada préstamo y cuánto queda pendiente para calcular la LGD y el EAD observados y con ellos, la pérdida real de la cartera.
-⚠️ Data leakage: las variables de desempeño (y el grade de Lending Club) NO pueden usarse como input de nuestro modelo de PD, porque no existían en el momento de conceder el préstamo. Usarlas sería hacer trampa. Sí son la base para modelizar LGD y EAD.
+
+
+### ⚠️ Data leakage: 
+Las variables de desempeño (y el grade de Lending Club) NO pueden usarse como input de nuestro modelo de PD, porque no existían en el momento de conceder el préstamo. Usarlas sería hacer trampa. Sí son la base para modelizar LGD y EAD.
 El problema: PD × LGD × EAD = ECL
 La pérdida esperada de un préstamo se descompone en tres piezas:
 PD (Probability of Default): probabilidad de que ese préstamo impague.
 LGD (Loss Given Default): qué % de lo que debe se pierde realmente si impaga (1 – tasa de recuperación).
 EAD (Exposure at Default): cuánto queda pendiente en el momento del impago.
 La pérdida esperada de cada préstamo es ECL_i = PD_i × LGD_i × EAD_i, y la pérdida esperada de la cartera es la suma de todos los ECL_i. 
-🏁 Las reglas de la competición
+
+### 🏁 Las reglas de la competición:
 Aquí no ganamos por accuracy ni por el modelo más bonito. Ganamos por quién estima mejor la pérdida real de la cartera de test. El reto se evaluará con las dos siguientes métricas: 
 ECL total de la cartera. Cuanto más bajo, mejor. 
 MAE y MAPE de los ECL_j
 Habrá dos ganadores, uno para el que consiga el mejor resultado en cada métrica.
-🚨 IMPORTANTE! Con las siguientes restricciones. Si se incumple alguna, el modelo se descarta automáticamente:
+
+### 🚨 IMPORTANTE! Con las siguientes restricciones. Si se incumple alguna, el modelo se descarta automáticamente:
 El ECL estimado tiene que ser mayor al “ECL real”
 ECL_j puede ser menor al “ECL_j real” para un máximo del 10% de la cartera
 No hace falta que los tres modelos sean igual de sofisticados, de hecho en banca es habitual que LGD y EAD sean ajustados con modelos distintos que la PD. Lo importante es que el ECL agregado sea una estimación honesta y razonablemente conservadora.
-📌 Al final del reto quien quiera participar tendrá que compartir su proyecto con la Comunidad. Yo elegiré una semilla para el train/test split y todos correréis vuestro notebook cambiando solo esa semilla. Esto es lo que tendríamos en la práctica. Unos datos train para modelizar (operaciones hasta ayer) y unos datos de test (dentro de varios años, la pérdida final observada para los nuevos créditos.
+### 📌 Al final 
+
+Del reto quien quiera participar tendrá que compartir su proyecto con la Comunidad. Yo elegiré una semilla para el train/test split y todos correréis vuestro notebook cambiando solo esa semilla. Esto es lo que tendríamos en la práctica. Unos datos train para modelizar (operaciones hasta ayer) y unos datos de test (dentro de varios años, la pérdida final observada para los nuevos créditos.
 Para que esto funcione, desde ya:
+
 Todo el pipeline (desde que cargáis los datos hasta que calculáis el ECL final) depende de una sola variable SEED, definida al principio del notebook, que controla el train_test_split y cualquier otra fuente de aleatoriedad (random_state fijado en todos los modelos).
 Nada de excluir filas "raras" a mano, ni de mirar el test antes de tiempo, ni de colar variables de desempeño en el modelo de PD. El split lo hace el código, no vosotros.
 Los datos test no pueden incluirse en ninguna modelización. La limpieza, ingeniería de variables (y por supuesto entrenamiento de modelos) tiene que hacerse sobre la muestra Train, y solo después se le aplicará todo esto a la muestra de Test. 
