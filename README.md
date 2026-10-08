@@ -8,7 +8,7 @@
 ![MLOps](https://img.shields.io/badge/MLOps-Deployment%20Ready-2ea44f)
 ![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
 
-> 🎯 **Resumen:** pipeline end-to-end de **riesgo de crédito** sobre una cartera de **+2.1 millones de créditos**: desde la limpieza y el análisis estadístico hasta un modelo de probabilidad de default (PD) interpretable y un preprocesador `fit/transform` listo para producción.
+> 🎯 **Resumen:** pipeline end-to-end de **riesgo de crédito** sobre **+2.1 millones de créditos** de Lending Club: limpieza, análisis, selección de variables con **WoE/IV**, un modelo de probabilidad de default (PD) con **AUC 0.71 / Gini 0.41 / KS 0.30 en test** y un preprocesador `fit/transform` listo para producción.
 
 ---
 
@@ -18,12 +18,14 @@
 2. [🏦 Contexto: evaluación de carteras y riesgo de crédito](#-contexto-evaluación-de-carteras-y-riesgo-de-crédito)
 3. [📐 ¿Qué es el ECL y cuál es su fórmula?](#-qué-es-el-ecl-y-cuál-es-su-fórmula)
 4. [📊 Dataset](#-dataset)
-5. [🔬 Desarrollo del notebook](#-desarrollo-del-notebook)
-6. [⚙️ Preprocesador y WoE Encoder](#️-preprocesador-y-woe-encoder)
-7. [🚀 Despliegue con MLOps](#-despliegue-con-mlops)
-8. [🛠️ Stack tecnológico](#️-stack-tecnológico)
-9. [🗺️ Roadmap](#️-roadmap)
-10. [👤 Autor](#-autor)
+5. [🧮 WoE e IV en pocas palabras](#-woe-e-iv-en-pocas-palabras)
+6. [🔬 Desarrollo del notebook](#-desarrollo-del-notebook)
+7. [⚙️ Preprocesador y WoE Encoder](#️-preprocesador-y-woe-encoder)
+8. [🏆 Resultados del modelo](#-resultados-del-modelo)
+9. [🚀 Despliegue con MLOps](#-despliegue-con-mlops)
+10. [🛠️ Stack tecnológico](#️-stack-tecnológico)
+11. [🗺️ Roadmap](#️-roadmap)
+12. [👤 Autor](#-autor)
 
 ---
 
@@ -35,11 +37,12 @@ Es el tipo de problema que resuelven a diario las áreas de **Riesgos**, **Cobra
 
 **Enfoque del proyecto**
 
-- 🧹 Limpieza e imputación de datos con criterios justificados estadísticamente.
-- 📉 Análisis exploratorio y pruebas de hipótesis (ANOVA, chi-cuadrado, correlación).
+- 🧹 Tratamiento de valores faltantes con criterio de negocio: un nulo en una variable de conteo significa "sin actividad".
+- 📉 Análisis exploratorio de las variables frente a la variable objetivo (default).
 - 🧮 Selección de variables con **Information Value (IV)**, correlación de Spearman y **VIF**.
-- 🔁 Transformación con **Weight of Evidence (WoE)**, estándar en scorecards de crédito.
+- 🔁 Categorización y transformación con **Weight of Evidence (WoE)**, estándar en scorecards de crédito.
 - 🤖 Modelado con **regresión logística**, por su interpretabilidad y aceptación regulatoria.
+- 🛡️ Control de **data leakage**: split antes de transformar y exclusión de variables posteriores al desembolso.
 - 📦 Feature engineering encapsulado en clases reutilizables para **MLOps**.
 
 ---
@@ -117,52 +120,96 @@ flowchart LR
 
 | Característica | Detalle |
 |---|---|
+| 🗂️ Fuente | [Lending Club Loan Data (cleared)](https://www.kaggle.com/datasets/db0boy/lending-club-loan-data-cleared/data), Kaggle |
 | 📦 Registros totales | **2,139,643** |
 | 🎯 Variable objetivo | `y` (binaria: default / no default) |
 | ⚖️ Balance de clases | ~**13 %** de casos positivos (desbalanceado) |
 | 🧬 Tipo de variables | Financieras, de historial crediticio y de morosidad |
 | 🔀 Split | Estratificado por `y`, `test_size=0.2`, `random_state=42` |
-| 🏋️ Train / 🧪 Test | 1,711,714 / 427,929 filas (~13.07 % default en ambos) |
+| 🏋️ Train / 🧪 Test | 1,711,714 / 427,929 filas (13.07 % de default en ambos) |
 
-**Supuesto temporal:** las variables tipo `_6mths`, `_12mths` y `_24mths` se miden hacia atrás desde la **fecha de originación** del crédito, no desde la extracción de los datos.
+**Supuesto temporal:** las variables tipo `_6mths`, `_12mths` y `_24mths` se miden hacia atrás desde la **fecha de originación** del crédito.
+
+---
+
+## 🧮 WoE e IV en pocas palabras
+
+Son dos métricas clásicas de los **scorecards de crédito**. Se calculan dividiendo cada variable en grupos (*bins*) y comparando, dentro de cada grupo, cuántos clientes pagaron y cuántos cayeron en default.
+
+### 🔁 WoE (Weight of Evidence)
+
+Mide qué tan "bueno" o "malo" es un grupo de clientes respecto al total:
+
+```
+WoE = ln( %buenos del grupo / %malos del grupo )
+```
+
+| WoE del grupo | Lectura |
+|---|---|
+| **Positivo** | Predominan los buenos pagadores |
+| **Cercano a 0** | Grupo neutro |
+| **Negativo** | Predominan los clientes en default |
+
+📌 **Ejemplo ilustrativo:** si un tramo de `interest_rate` concentra el 10 % de los buenos y el 25 % de los malos, su WoE es ln(0.10 / 0.25) ≈ **-0.92**, es decir, un grupo de mayor riesgo.
+
+**¿Para qué se usa?** Cada valor original se reemplaza por el WoE de su grupo. Así se obtiene una relación monótona con el riesgo, se tratan de forma uniforme los nulos, outliers y centinelas, y las variables quedan listas para una regresión logística interpretable.
+
+### 📏 IV (Information Value)
+
+Resume el poder predictivo de **toda una variable** sumando el aporte de cada grupo:
+
+```
+IV = Σ ( %buenos − %malos ) × WoE
+```
+
+Cuanto mayor es el IV, mejor separa la variable a buenos y malos pagadores. En este proyecto se usó para **ranking y filtrado** de variables (umbral IV > 0.01). Sus rangos de interpretación están en la guía de la sección de desarrollo.
 
 ---
 
 ## 🔬 Desarrollo del notebook
 
-### 1️⃣ Limpieza e imputación de nulos
+### 1️⃣ Split antes de transformar
 
-- 🔢 **Numéricas:** imputación por **media**. Se descartó la mediana porque daba 0 en varias columnas.
-- 🔤 **Categóricas** (`emp_title`, `emp_length`): imputación por **moda**.
-- 🚩 **Flags de "nunca ocurrió"** para no perder información al imputar:
-  `nunca_delinq`, `nunca_last_install`, `nunca_last_bankcard_delinq`, `nunca_last_revol_delinq`, `flag_sin_empleo`.
+El dataset se divide en train y test **antes** de cualquier transformación, para evitar *data leakage*. Todo el análisis exploratorio y los parámetros aprendidos salen únicamente de train.
 
-### 2️⃣ Feature engineering
+### 2️⃣ Tratamiento de valores faltantes
 
-- 📅 `credit_history_length` = año de emisión − año de primera línea de crédito (rango 0–83, sin negativos).
-- 🔠 `emp_length_num`: codificación ordinal de la antigüedad laboral (0–10).
+El criterio fue **no inventar actividad** que probablemente nunca ocurrió:
+
+| Grupo de variables | Tratamiento | Razonamiento |
+|---|---|---|
+| `mths_since_*` (4 variables) | Flag `nunca_*` + centinela **999** | Si nunca ocurrió, equivale a "hace muchísimo tiempo" |
+| `num_*` (6 variables de conteo) | Imputación con **0** | Lo más razonable es que nunca hubo actividad; una media implicaría actividad y debilitaría el coeficiente |
+| `max_bal_owed` | **Mediana** | Distribución más asimétrica |
+| `bal_to_cred_lim` | **Media** | Distribución más simétrica |
+| `emp_title` | Flag `sin_emp_title` y se elimina la columna | Un nulo puede significar desempleo |
+| `emp_length` | Se convierte a `emp_length_num` (nulos en 0) | Numérica es más útil que categórica |
 
 ### 3️⃣ Tratamiento de outliers
 
-- ✂️ **Winsorización 5 %–95 %** para outliers moderados.
-- 📏 **Capping con 1.5 × IQR** para outliers muy lejanos.
-- Criterio aplicado variable por variable.
+| Grupo | Decisión |
+|---|---|
+| Variables con centinela 999 y conteos de morosidad | Sin modificar, para no perder información |
+| 7 variables continuas casi simétricas (`interest_rate`, `monthly_payment`, `funded_amnt`, etc.) | **Capping 1.5 × IQR** |
+| `annual_income` > $1M (574 registros) | Prueba z de proporciones (p = 0.003): hay diferencia, pero se conservan limitados a $1M |
 
-### 4️⃣ Pruebas estadísticas
+### 4️⃣ EDA frente al default y control de leakage
 
-- 📈 Correlación (numérico–numérico).
-- 🧪 ANOVA (categórico–numérico).
-- 🎲 Chi-cuadrado (categórico–categórico).
+- 📦 Boxplots de las variables numéricas separados por `y`.
+- 🔎 Se detectó que el centinela 999 de `mths_since_recent_bankcard_delinq` concentra ~87 % de `y=0`, lo que corrige la lectura engañosa del boxplot.
+- 📆 Se verificó que no hay saltos abruptos por año de emisión.
+- 🚫 Se excluyeron variables posteriores al desembolso (`princ_rec`, `interest_rec`, `late_fees_rec`, entre otras) con un `assert` de seguridad.
 
 ### 5️⃣ Selección de variables
 
 | Etapa | Criterio | Resultado |
 |---|---|---|
-| **Information Value** | Eliminar variables con IV < 0.01 | Se conservaron las variables con poder predictivo (p. ej. `interest_rate`, IV = 0.45) |
-| **Correlación de Spearman** | Eliminar la de menor IV en pares con \|ρ\| > 0.7 | Salieron `nunca_last_install`, `num_installment_acc_op_in_24mths`, `num_rev_trades_op_in_12mths`, `funded_amnt` |
+| **WoE / IV** | Conservar variables con IV > 0.01 | 17 variables (la más fuerte: `interest_rate`, IV = 0.446) |
+| **Correlación de Spearman** | Eliminar la de menor IV en pares con \|ρ\| > 0.7 | Salieron 4 variables redundantes |
 | **VIF** | Revisar multicolinealidad | **VIF máximo = 1.97** ✅ |
+| **Variables adicionales** | Evaluar con IV | Se suman `loan_term_months` (0.073) y `credit_history_length` (0.011); se descartan `emp_length_num` y `region_code` |
 
-🏁 **Set final: 15 variables**, sin correlaciones fuertes y listas para WoE encoding y modelado.
+🏁 **Set final: 15 variables**, con **VIF máximo de 1.98**.
 
 ### 📚 Guía de interpretación del IV
 
@@ -180,44 +227,66 @@ flowchart LR
 
 El feature engineering se estructuró como clases con interfaz **`fit` / `transform`**, de modo que el mismo código corra en entrenamiento y en producción.
 
-### 🔁 `WOEEncoder`
+### 🔁 `WOEEncoderV2`
 
 Calcula el **Weight of Evidence** de cada grupo a partir de train y lo aplica igual a train y test:
 
 ```
-WoE = ln( % no-default del grupo / % default del grupo )
+WoE = ln( %buenos / %malos )      # con suavizado de Laplace
 ```
 
 - Se ajusta **solo con train** para evitar *data leakage*.
-- Relación monótona con el log-odds, ideal para regresión logística.
-- Maneja nulos, outliers y categóricas de forma uniforme.
+- Bins manuales para conteos y centinelas, **deciles** para variables continuas y categorías directas para `loan_term_months`.
+- Soporta variables categóricas y aplica un valor de respaldo (WoE = 0) ante valores fuera de rango. En test **nunca se activó**: todos los valores cayeron en bins reales de train.
 
 ### 🧱 `PreprocesadorECL`
 
-Encapsula todo el pipeline de transformación:
-
-| Paso | Descripción |
+| Tipo | Qué hace |
 |---|---|
-| 🚩 Flags | Crea indicadores `nunca_*` **antes** de imputar |
-| 🧩 Imputación | Media (numéricas) y moda (categóricas) aprendidas en train |
-| ✂️ Outliers | Winsorización / capping con límites de train |
-| 🧬 Derivadas | `credit_history_length`, `emp_length_num` |
-| 🎯 Selección | Conserva las 15 variables finales |
-| 🔁 WoE | Aplica el encoder corregido |
+| 🔒 **Tipo A (fijas)** | `credit_history_length`, nulos → 999 / 0 según la variable, límite de `annual_income` en $1M |
+| 📚 **Tipo B (aprendidas en train)** | Mediana de `max_bal_owed`, media de `bal_to_cred_lim` y mapas WoE |
 
 ```python
-pre = PreprocesadorECL()
-pre.fit(train_df)                  # aprende parámetros solo con train
+prep = PreprocesadorECL()
+prep.fit(train_df)                  # aprende parámetros solo con train
 
-X_train = pre.transform(train_df)
-X_test  = pre.transform(test_df)   # test crudo, mismas transformaciones
+train_woe = prep.transform(train_df)
+test_woe  = prep.transform(test_df) # test crudo, mismas transformaciones
+
+features = prep.get_features_finales()
+X_train, y_train = train_woe[features], train_woe['y']
+X_test,  y_test  = test_woe[features],  test_woe['y']
 ```
+
+✅ **Verificaciones:** sin `NaN` ni `Inf` en train y test, shapes `(1,711,714 × 15)` y `(427,929 × 15)`, y misma tasa de default en ambos conjuntos.
+
+---
+
+## 🏆 Resultados del modelo
+
+```python
+LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
+```
+
+| Métrica | Train | Test |
+|---|---|---|
+| **AUC-ROC** | 0.7056 | **0.7065** |
+| **Gini** | 0.4112 | **0.4129** |
+| **KS** | 0.2981 | **0.3005** |
+
+- ✅ **Sin sobreajuste:** las métricas de train y test son prácticamente idénticas.
+- ✅ **Coeficientes coherentes:** 14 de 15 variables tienen el signo esperado (negativo, porque el WoE se define como `ln(%buenos/%malos)`). La variable con mayor peso es `interest_rate` (-0.82).
+- 🔍 **Punto a revisar:** `num_open_trades_in_6mths` tiene un coeficiente positivo muy pequeño (+0.04), candidato a reagrupar sus bins.
+
+### 📅 Estabilidad temporal
+
+AUC en test por año de emisión: de **0.64 en 2007** a **0.70 en 2018**, con mejora gradual en los años recientes.
 
 ---
 
 ## 🚀 Despliegue con MLOps
 
-> 📝 Esta sección describe la arquitectura objetivo del proyecto. El preprocesador ya está diseñado con interfaz `fit/transform` justamente para facilitar estos pasos.
+> 📝 Esta sección describe la arquitectura objetivo. El preprocesador ya está diseñado con interfaz `fit/transform` justamente para facilitar estos pasos.
 
 ```mermaid
 flowchart LR
@@ -251,6 +320,7 @@ flowchart LR
 | 📈 Visualización | Matplotlib, Seaborn |
 | 🤖 Modelado | scikit-learn (regresión logística) |
 | 🧮 Riesgo de crédito | WoE, IV, VIF, Spearman |
+| 📥 Datos | Kaggle (`kagglehub`) |
 | 🚀 MLOps | joblib, Docker, FastAPI, SageMaker / Azure ML |
 | 📓 Entorno | Jupyter Notebook |
 
@@ -258,36 +328,28 @@ flowchart LR
 
 ## 🗺️ Roadmap
 
-- [x] Limpieza e imputación de nulos
-- [x] Tratamiento de outliers
-- [x] Pruebas de hipótesis
-- [x] Cálculo de IV y selección de variables
-- [x] Correlación (Spearman) y VIF
-- [x] Feature engineering y split estratificado
-- [x] Diseño de `WOEEncoder` y `PreprocesadorECL`
-- [ ] Entrenamiento de la regresión logística
-- [ ] Evaluación: AUC-ROC, KS, Gini
+- [x] Split estratificado y control de data leakage
+- [x] Tratamiento de valores faltantes y outliers
+- [x] EDA frente a la variable objetivo
+- [x] WoE / IV, correlación (Spearman) y VIF
+- [x] `WOEEncoderV2` y `PreprocesadorECL`
+- [x] Entrenamiento de la regresión logística
+- [x] Evaluación: AUC-ROC, Gini, KS y AUC por año
+- [ ] Revisar `num_open_trades_in_6mths` (signo del coeficiente)
+- [ ] Incorporar el capping IQR dentro del preprocesador
 - [ ] Calibración de PD y cálculo de ECL (PD × LGD × EAD)
 - [ ] Empaquetado y despliegue con MLOps
 - [ ] Monitoreo y reentrenamiento
-
-### 📈 Resultados del modelo
-
-| Métrica | Train | Test |
-|---|---|---|
-| AUC-ROC | _por completar_ | _por completar_ |
-| KS | _por completar_ | _por completar_ |
-| Gini | _por completar_ | _por completar_ |
 
 ---
 
 ## 👤 Autor
 
 **Alex** · 🇪🇨 Ecuador
-🤖 AI / Software Engineering · MLOps · Application Development
+🤖 AI / Data Scientist / Blockchain Developer · MLOps · Analytics
 🐍 Python · SQL · Electrónica
 
-📫 **Contacto:** _agrega aquí tu LinkedIn, GitHub y correo_
+📫s **Contacto:** _agrega aquí tu LinkedIn, GitHub y correo_
 
 ---
 
