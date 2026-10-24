@@ -1,0 +1,1440 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ECL API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/model/info": {
+      "get": {
+        "summary": "Model Info",
+        "operationId": "model_info_model_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "summary": "Predict",
+        "operationId": "predict_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/portfolio": {
+      "post": {
+        "summary": "Portfolio",
+        "operationId": "portfolio_portfolio_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_portfolio_portfolio_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCreatedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}": {
+      "get": {
+        "summary": "Estado Job",
+        "operationId": "estado_job_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/summary": {
+      "get": {
+        "summary": "Resumen Job",
+        "operationId": "resumen_job_jobs__job_id__summary_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/rows": {
+      "get": {
+        "summary": "Filas Job",
+        "operationId": "filas_job_jobs__job_id__rows_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "id",
+                "funded_amnt",
+                "pd",
+                "lgd",
+                "ead",
+                "ecl_calibrado",
+                "ecl_final",
+                "banda_riesgo"
+              ],
+              "type": "string",
+              "default": "ecl_final",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Order"
+            }
+          },
+          {
+            "name": "min_pd",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 1,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Pd"
+            }
+          },
+          {
+            "name": "marcado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Marcado"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/download": {
+      "get": {
+        "summary": "Descargar Job",
+        "operationId": "descargar_job_jobs__job_id__download_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/history": {
+      "get": {
+        "summary": "Historial",
+        "operationId": "historial_history_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HistoryItem"
+                  },
+                  "type": "array",
+                  "title": "Response Historial History Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgrupacionAno": {
+        "properties": {
+          "anio": {
+            "type": "integer",
+            "title": "Anio"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "exposicion_total": {
+            "type": "number",
+            "title": "Exposicion Total"
+          },
+          "ecl_calibrado": {
+            "type": "number",
+            "title": "Ecl Calibrado"
+          },
+          "ecl_final": {
+            "type": "number",
+            "title": "Ecl Final"
+          }
+        },
+        "type": "object",
+        "required": [
+          "anio",
+          "n",
+          "exposicion_total",
+          "ecl_calibrado",
+          "ecl_final"
+        ],
+        "title": "AgrupacionAno",
+        "description": "Agregados por año de originación."
+      },
+      "AgrupacionPlazo": {
+        "properties": {
+          "plazo_meses": {
+            "type": "integer",
+            "title": "Plazo Meses"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "exposicion_total": {
+            "type": "number",
+            "title": "Exposicion Total"
+          },
+          "ecl_calibrado": {
+            "type": "number",
+            "title": "Ecl Calibrado"
+          },
+          "ecl_final": {
+            "type": "number",
+            "title": "Ecl Final"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plazo_meses",
+          "n",
+          "exposicion_total",
+          "ecl_calibrado",
+          "ecl_final"
+        ],
+        "title": "AgrupacionPlazo",
+        "description": "Agregados por plazo del crédito."
+      },
+      "Body_portfolio_portfolio_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_portfolio_portfolio_post"
+      },
+      "Contribucion": {
+        "properties": {
+          "variable": {
+            "type": "string",
+            "title": "Variable"
+          },
+          "valor_woe": {
+            "type": "number",
+            "title": "Valor Woe"
+          },
+          "coeficiente": {
+            "type": "number",
+            "title": "Coeficiente"
+          },
+          "contribucion": {
+            "type": "number",
+            "title": "Contribucion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variable",
+          "valor_woe",
+          "coeficiente",
+          "contribucion"
+        ],
+        "title": "Contribucion",
+        "description": "Contribución de una variable al logit del modelo PD."
+      },
+      "DataQualityReport": {
+        "properties": {
+          "filas_leidas": {
+            "type": "integer",
+            "title": "Filas Leidas"
+          },
+          "filas_procesadas": {
+            "type": "integer",
+            "title": "Filas Procesadas"
+          },
+          "columnas_faltantes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Columnas Faltantes"
+          },
+          "valores_faltantes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Valores Faltantes"
+          },
+          "total_fuera_rango": {
+            "type": "integer",
+            "title": "Total Fuera Rango"
+          },
+          "valores_fuera_rango": {
+            "items": {
+              "$ref": "#/components/schemas/ValorFueraRango"
+            },
+            "type": "array",
+            "title": "Valores Fuera Rango"
+          },
+          "identificadores_duplicados": {
+            "type": "integer",
+            "title": "Identificadores Duplicados"
+          },
+          "advertencias": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Advertencias"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filas_leidas",
+          "filas_procesadas",
+          "columnas_faltantes",
+          "valores_faltantes",
+          "total_fuera_rango",
+          "valores_fuera_rango",
+          "identificadores_duplicados",
+          "advertencias"
+        ],
+        "title": "DataQualityReport",
+        "description": "Reporte de calidad de datos de un CSV de cartera."
+      },
+      "DecilRiesgo": {
+        "properties": {
+          "banda_riesgo": {
+            "type": "integer",
+            "title": "Banda Riesgo"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "pd_media": {
+            "type": "number",
+            "title": "Pd Media"
+          },
+          "ecl_calibrado": {
+            "type": "number",
+            "title": "Ecl Calibrado"
+          },
+          "ecl_final": {
+            "type": "number",
+            "title": "Ecl Final"
+          }
+        },
+        "type": "object",
+        "required": [
+          "banda_riesgo",
+          "n",
+          "pd_media",
+          "ecl_calibrado",
+          "ecl_final"
+        ],
+        "title": "DecilRiesgo",
+        "description": "Agregados por banda de riesgo."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_version",
+          "seed"
+        ],
+        "title": "HealthResponse",
+        "description": "Estado del servicio."
+      },
+      "HistogramaPD": {
+        "properties": {
+          "bin_inicio": {
+            "type": "number",
+            "title": "Bin Inicio"
+          },
+          "bin_fin": {
+            "type": "number",
+            "title": "Bin Fin"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bin_inicio",
+          "bin_fin",
+          "n"
+        ],
+        "title": "HistogramaPD",
+        "description": "Bin del histograma de probabilidades de default."
+      },
+      "HistoryItem": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "fecha": {
+            "type": "string",
+            "title": "Fecha"
+          },
+          "nombre_archivo": {
+            "type": "string",
+            "title": "Nombre Archivo"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "exposicion_total": {
+            "type": "number",
+            "title": "Exposicion Total"
+          },
+          "ecl_calibrado_total": {
+            "type": "number",
+            "title": "Ecl Calibrado Total"
+          },
+          "ecl_final_total": {
+            "type": "number",
+            "title": "Ecl Final Total"
+          },
+          "pct_marcados": {
+            "type": "number",
+            "title": "Pct Marcados"
+          },
+          "pd_media": {
+            "type": "number",
+            "title": "Pd Media"
+          },
+          "version_modelo": {
+            "type": "string",
+            "title": "Version Modelo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "fecha",
+          "nombre_archivo",
+          "n",
+          "exposicion_total",
+          "ecl_calibrado_total",
+          "ecl_final_total",
+          "pct_marcados",
+          "pd_media",
+          "version_modelo"
+        ],
+        "title": "HistoryItem",
+        "description": "Resumen de una corrida guardada en disco."
+      },
+      "JobCreatedResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "error"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status"
+        ],
+        "title": "JobCreatedResponse",
+        "description": "Confirmación de encolamiento de una cartera."
+      },
+      "JobStatusResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "error"
+            ],
+            "title": "Status"
+          },
+          "mensaje": {
+            "type": "string",
+            "title": "Mensaje"
+          },
+          "fecha_creacion": {
+            "type": "string",
+            "title": "Fecha Creacion"
+          },
+          "nombre_archivo": {
+            "type": "string",
+            "title": "Nombre Archivo"
+          },
+          "reporte_calidad": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataQualityReport"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totales": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TotalesCartera"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "mensaje",
+          "fecha_creacion",
+          "nombre_archivo"
+        ],
+        "title": "JobStatusResponse",
+        "description": "Estado y resultados de una corrida en segundo plano."
+      },
+      "JobSummaryResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "histograma_pd": {
+            "items": {
+              "$ref": "#/components/schemas/HistogramaPD"
+            },
+            "type": "array",
+            "title": "Histograma Pd"
+          },
+          "por_decil": {
+            "items": {
+              "$ref": "#/components/schemas/DecilRiesgo"
+            },
+            "type": "array",
+            "title": "Por Decil"
+          },
+          "por_plazo": {
+            "items": {
+              "$ref": "#/components/schemas/AgrupacionPlazo"
+            },
+            "type": "array",
+            "title": "Por Plazo"
+          },
+          "por_ano": {
+            "items": {
+              "$ref": "#/components/schemas/AgrupacionAno"
+            },
+            "type": "array",
+            "title": "Por Ano"
+          },
+          "top_creditos": {
+            "items": {
+              "$ref": "#/components/schemas/TopCredito"
+            },
+            "type": "array",
+            "title": "Top Creditos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "histograma_pd",
+          "por_decil",
+          "por_plazo",
+          "por_ano",
+          "top_creditos"
+        ],
+        "title": "JobSummaryResponse",
+        "description": "Agregados para los gráficos de la interfaz."
+      },
+      "LoanInput": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "funded_amnt": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Funded Amnt"
+          },
+          "interest_rate": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Interest Rate"
+          },
+          "loan_term_months": {
+            "type": "integer",
+            "enum": [
+              36,
+              60
+            ],
+            "title": "Loan Term Months"
+          },
+          "monthly_payment": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Monthly Payment"
+          },
+          "annual_income": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Annual Income"
+          },
+          "dept_paym_income_ratio": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Dept Paym Income Ratio"
+          },
+          "issue_date_year": {
+            "type": "integer",
+            "maximum": 2100.0,
+            "minimum": 1900.0,
+            "title": "Issue Date Year"
+          },
+          "earliest_cr_line_year": {
+            "type": "integer",
+            "maximum": 2100.0,
+            "minimum": 1900.0,
+            "title": "Earliest Cr Line Year"
+          },
+          "num_rev_trades_op_in_24mths": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Rev Trades Op In 24Mths"
+          },
+          "num_inq_in_6mths": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Num Inq In 6Mths"
+          },
+          "num_inq": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Inq"
+          },
+          "num_derogatory_pub_rec": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Num Derogatory Pub Rec"
+          },
+          "mths_since_last_installment_acc_op": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mths Since Last Installment Acc Op"
+          },
+          "bal_to_cred_lim": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bal To Cred Lim"
+          },
+          "max_bal_owed": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Bal Owed"
+          },
+          "used_credit_share": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Used Credit Share"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "funded_amnt",
+          "interest_rate",
+          "loan_term_months",
+          "monthly_payment",
+          "annual_income",
+          "dept_paym_income_ratio",
+          "issue_date_year",
+          "earliest_cr_line_year",
+          "num_inq_in_6mths",
+          "num_derogatory_pub_rec",
+          "used_credit_share"
+        ],
+        "title": "LoanInput",
+        "description": "Crédito individual con las 16 columnas requeridas por el modelo."
+      },
+      "LoanPrediction": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "pd": {
+            "type": "number",
+            "title": "Pd"
+          },
+          "lgd": {
+            "type": "number",
+            "title": "Lgd"
+          },
+          "ead": {
+            "type": "number",
+            "title": "Ead"
+          },
+          "ecl_calibrado": {
+            "type": "number",
+            "title": "Ecl Calibrado"
+          },
+          "ecl_final": {
+            "type": "number",
+            "title": "Ecl Final"
+          },
+          "marcado": {
+            "type": "boolean",
+            "title": "Marcado"
+          },
+          "banda_riesgo": {
+            "type": "integer",
+            "title": "Banda Riesgo"
+          },
+          "advertencias": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Advertencias"
+          },
+          "contribuciones": {
+            "items": {
+              "$ref": "#/components/schemas/Contribucion"
+            },
+            "type": "array",
+            "title": "Contribuciones"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pd",
+          "lgd",
+          "ead",
+          "ecl_calibrado",
+          "ecl_final",
+          "marcado",
+          "banda_riesgo"
+        ],
+        "title": "LoanPrediction",
+        "description": "Resultado ECL y factores de riesgo de un crédito."
+      },
+      "LoanRow": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "funded_amnt": {
+            "type": "number",
+            "title": "Funded Amnt"
+          },
+          "pd": {
+            "type": "number",
+            "title": "Pd"
+          },
+          "lgd": {
+            "type": "number",
+            "title": "Lgd"
+          },
+          "ead": {
+            "type": "number",
+            "title": "Ead"
+          },
+          "ecl_calibrado": {
+            "type": "number",
+            "title": "Ecl Calibrado"
+          },
+          "ecl_final": {
+            "type": "number",
+            "title": "Ecl Final"
+          },
+          "marcado": {
+            "type": "boolean",
+            "title": "Marcado"
+          },
+          "banda_riesgo": {
+            "type": "integer",
+            "title": "Banda Riesgo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "funded_amnt",
+          "pd",
+          "lgd",
+          "ead",
+          "ecl_calibrado",
+          "ecl_final",
+          "marcado",
+          "banda_riesgo"
+        ],
+        "title": "LoanRow",
+        "description": "Fila paginada de una cartera procesada."
+      },
+      "ModelInfoResponse": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "supuestos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supuestos"
+          },
+          "limites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limites"
+          },
+          "aviso": {
+            "type": "string",
+            "title": "Aviso"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metadata",
+          "supuestos",
+          "limites",
+          "aviso"
+        ],
+        "title": "ModelInfoResponse",
+        "description": "Metadatos del modelo y textos de contexto."
+      },
+      "PredictRequest": {
+        "properties": {
+          "creditos": {
+            "items": {
+              "$ref": "#/components/schemas/LoanInput"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Creditos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "creditos"
+        ],
+        "title": "PredictRequest",
+        "description": "Solicitud de predicción para un lote pequeño de créditos."
+      },
+      "PredictResponse": {
+        "properties": {
+          "creditos": {
+            "items": {
+              "$ref": "#/components/schemas/LoanPrediction"
+            },
+            "type": "array",
+            "title": "Creditos"
+          },
+          "totales": {
+            "$ref": "#/components/schemas/TotalesCartera"
+          },
+          "advertencias": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Advertencias"
+          }
+        },
+        "type": "object",
+        "required": [
+          "creditos",
+          "totales"
+        ],
+        "title": "PredictResponse",
+        "description": "Respuesta del endpoint de predicción individual/lote pequeño."
+      },
+      "RowsResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LoanRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "total",
+          "page",
+          "page_size",
+          "rows"
+        ],
+        "title": "RowsResponse",
+        "description": "Página de créditos de una corrida."
+      },
+      "TopCredito": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "funded_amnt": {
+            "type": "number",
+            "title": "Funded Amnt"
+          },
+          "pd": {
+            "type": "number",
+            "title": "Pd"
+          },
+          "ecl_final": {
+            "type": "number",
+            "title": "Ecl Final"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "funded_amnt",
+          "pd",
+          "ecl_final"
+        ],
+        "title": "TopCredito",
+        "description": "Crédito con mayor ECL final."
+      },
+      "TotalesCartera": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "exposicion_total": {
+            "type": "number",
+            "title": "Exposicion Total"
+          },
+          "ecl_calibrado_total": {
+            "type": "number",
+            "title": "Ecl Calibrado Total"
+          },
+          "ecl_final_total": {
+            "type": "number",
+            "title": "Ecl Final Total"
+          },
+          "ratio_final_calibrado": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio Final Calibrado"
+          },
+          "pct_marcados": {
+            "type": "number",
+            "title": "Pct Marcados"
+          },
+          "pd_media": {
+            "type": "number",
+            "title": "Pd Media"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "exposicion_total",
+          "ecl_calibrado_total",
+          "ecl_final_total",
+          "ratio_final_calibrado",
+          "pct_marcados",
+          "pd_media"
+        ],
+        "title": "TotalesCartera",
+        "description": "Agregados principales de una cartera."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValorFueraRango": {
+        "properties": {
+          "columna": {
+            "type": "string",
+            "title": "Columna"
+          },
+          "fila": {
+            "type": "integer",
+            "title": "Fila"
+          },
+          "valor": {
+            "type": "number",
+            "title": "Valor"
+          },
+          "minimo": {
+            "type": "number",
+            "title": "Minimo"
+          },
+          "maximo": {
+            "type": "number",
+            "title": "Maximo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "columna",
+          "fila",
+          "valor",
+          "minimo",
+          "maximo"
+        ],
+        "title": "ValorFueraRango",
+        "description": "Valor de entrada fuera del rango observado en entrenamiento."
+      }
+    }
+  }
+}

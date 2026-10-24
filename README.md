@@ -1,356 +1,352 @@
-# 💳 ECL_Credit_Loss
-### Modelo de Pérdida Crediticia Esperada (Expected Credit Loss) con Machine Learning y MLOps
+# ECL Credit Loss
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
-![SQL](https://img.shields.io/badge/SQL-Analytics-4479A1?logo=postgresql&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-Logistic%20Regression-F7931E?logo=scikitlearn&logoColor=white)
-![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
-![MLOps](https://img.shields.io/badge/MLOps-Deployment%20Ready-2ea44f)
-![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
+Aplicación local para estimar la **pérdida crediticia esperada (ECL)** de una cartera:
 
-> 🎯 **Resumen:** pipeline end-to-end de **riesgo de crédito** sobre **+2.1 millones de créditos** de Lending Club: limpieza, análisis, selección de variables con **WoE/IV**, un modelo de probabilidad de default (PD) con **AUC 0.71 / Gini 0.41 / KS 0.30 en test** y un preprocesador `fit/transform` listo para producción.
-
----
-
-## 📌 Tabla de contenidos
-
-1. [🧭 ¿De qué trata el proyecto?](#-de-qué-trata-el-proyecto)
-2. [🏦 Contexto: evaluación de carteras y riesgo de crédito](#-contexto-evaluación-de-carteras-y-riesgo-de-crédito)
-3. [📐 ¿Qué es el ECL y cuál es su fórmula?](#-qué-es-el-ecl-y-cuál-es-su-fórmula)
-4. [📊 Dataset](#-dataset)
-5. [🧮 WoE e IV en pocas palabras](#-woe-e-iv-en-pocas-palabras)
-6. [🔬 Desarrollo del notebook](#-desarrollo-del-notebook)
-7. [⚙️ Preprocesador y WoE Encoder](#️-preprocesador-y-woe-encoder)
-8. [🏆 Resultados del modelo](#-resultados-del-modelo)
-9. [🚀 Despliegue con MLOps](#-despliegue-con-mlops)
-10. [🛠️ Stack tecnológico](#️-stack-tecnológico)
-11. [🗺️ Roadmap](#️-roadmap)
-12. [👤 Autor](#-autor)
-
----
-
-## 🧭 ¿De qué trata el proyecto?
-
-**ECL_Credit_Loss** construye un modelo de riesgo crediticio que estima la probabilidad de que un cliente caiga en **default** y sienta la base para calcular la **pérdida esperada** de una cartera de créditos.
-
-Es el tipo de problema que resuelven a diario las áreas de **Riesgos**, **Cobranzas** y **Finanzas** de bancos, cooperativas, fintechs y emisores de crédito de consumo.
-
-**Enfoque del proyecto**
-
-- 🧹 Tratamiento de valores faltantes con criterio de negocio: un nulo en una variable de conteo significa "sin actividad".
-- 📉 Análisis exploratorio de las variables frente a la variable objetivo (default).
-- 🧮 Selección de variables con **Information Value (IV)**, correlación de Spearman y **VIF**.
-- 🔁 Categorización y transformación con **Weight of Evidence (WoE)**, estándar en scorecards de crédito.
-- 🤖 Modelado con **regresión logística**, por su interpretabilidad y aceptación regulatoria.
-- 🛡️ Control de **data leakage**: split antes de transformar y exclusión de variables posteriores al desembolso.
-- 📦 Feature engineering encapsulado en clases reutilizables para **MLOps**.
-
----
-
-## 🏦 Contexto: evaluación de carteras y riesgo de crédito
-
-Una **cartera de créditos** es el conjunto de préstamos que una institución tiene vigentes. Gestionarla implica responder preguntas como:
-
-| Pregunta de negocio | Herramienta |
-|---|---|
-| ¿Qué clientes tienen mayor probabilidad de no pagar? | Modelo de **PD** (scoring) |
-| ¿Cuánto se pierde si el cliente no paga? | **LGD** (Loss Given Default) |
-| ¿Cuánta exposición hay al momento del default? | **EAD** (Exposure at Default) |
-| ¿Cuánto debo provisionar para cubrir pérdidas? | **ECL** (provisiones) |
-| ¿Dónde otorgar más o menos crédito? | Segmentación y políticas de originación |
-
-**Casos de uso en evaluación de carteras**
-
-- ✅ **Originación:** aprobar, rechazar o fijar condiciones de un crédito nuevo.
-- 📊 **Gestión de cartera:** identificar segmentos que se deterioran antes de que entren en mora.
-- 🛡️ **Provisiones regulatorias:** estimar reservas bajo marcos como **IFRS 9** y **Basilea**.
-- 💰 **Pricing por riesgo:** ajustar tasas según el perfil del cliente.
-- 📞 **Cobranza:** priorizar esfuerzos sobre las cuentas con mayor riesgo.
-
----
-
-## 📐 ¿Qué es el ECL y cuál es su fórmula?
-
-El **Expected Credit Loss (ECL)** o *Pérdida Crediticia Esperada* es la estimación, ponderada por probabilidad, de las pérdidas que una institución espera tener por créditos que no se paguen. Es el corazón del modelo de provisiones de **IFRS 9**, que obliga a reconocer pérdidas **esperadas** y no solo las ya ocurridas.
-
-### 🧮 Fórmula
-
-```
+```text
 ECL = PD × LGD × EAD
 ```
 
-| Componente | Significado | Rango típico |
+Incluye un paquete Python reproducible, una API FastAPI, procesamiento de carteras CSV en segundo plano y una interfaz Next.js para el analista.
+
+Guía detallada de la interfaz: [USERGUIDE.md](USERGUIDE.md).
+
+> **Aviso:** esta herramienta es analítica y educativa. No es un detector de fraude y no debe usarse para aprobar o rechazar créditos de forma automática.
+
+## Estado
+
+- Fases 1–4 implementadas: modelo, API, frontend, documentación y verificación local.
+- Backend probado con `pytest`.
+- Frontend validado con `typecheck`, `lint` y build de producción.
+- Flujo E2E validado con una cartera de demostración de 1.000 créditos.
+
+## Arquitectura
+
+```text
+data/raw/X.csv + target.csv
+        │
+        ▼
+train.py ──► models/ecl_model.joblib + models/metadata.json
+        │
+        ├──► predict.py (CLI)
+        │
+        └──► api/main.py (FastAPI)
+                    │
+                    ▼
+            frontend/ (Next.js)
+```
+
+| Componente | Tecnología | Puerto |
+|---|---|---:|
+| API | FastAPI + Uvicorn | 8000 |
+| Interfaz | Next.js App Router + TypeScript | 3000 |
+| Modelo | Regresión logística + WoE/IV | — |
+| Persistencia local | CSV, Parquet, JSON e historial | — |
+
+## Requisitos
+
+- Python 3.11 o superior. Probado con Python 3.14.
+- Node.js 20.9 o superior. Probado con Node.js 24.
+- npm.
+- Datos de entrada y artefactos del modelo, que **no se versionan** en el repositorio.
+
+`data/raw/X.csv` y `data/raw/target.csv` son necesarios para entrenar o regenerar la muestra. Si ya existen `models/ecl_model.joblib` y `models/metadata.json`, puede ejecutar la API sin reentrenar.
+
+## Instalación y ejecución
+
+### 1. Backend
+
+Desde la raíz del repositorio.
+
+**Windows PowerShell**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+**Linux / macOS**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Entrenamiento reproducible:
+
+```powershell
+python train.py --seed 42 --data-dir data/raw --out-dir models
+```
+
+Generación de la muestra de demostración:
+
+```powershell
+python scripts/make_sample.py
+```
+
+El comando crea:
+
+- `data/samples/cartera_demo.csv`
+- `frontend/public/cartera_demo.csv`, usado por el botón **Usar cartera de ejemplo**
+
+Si el directorio del frontend no existe, la segunda copia se omite. Para evitar la copia:
+
+```powershell
+python scripts/make_sample.py --skip-frontend-copy
+```
+
+Inicio de la API:
+
+```powershell
+uvicorn api.main:app --reload --port 8000
+```
+
+Comprobación:
+
+```powershell
+Invoke-RestMethod http://localhost:8000/health
+```
+
+Documentación interactiva: <http://localhost:8000/docs>
+
+### 2. Frontend
+
+En otra terminal:
+
+```powershell
+cd frontend
+npm install
+Copy-Item ..\.env.example .env.local
+npm run dev
+```
+
+En Linux / macOS:
+
+```bash
+cd frontend
+npm install
+cp ../.env.example .env.local
+npm run dev
+```
+
+Abrir <http://localhost:3000>.
+
+La API solo permite CORS desde `http://localhost:3000`. Si cambia el puerto del frontend, actualice `api/settings.py` o la configuración correspondiente.
+
+### 3. Variables de entorno
+
+El archivo `.env.example` de la raíz contiene:
+
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Debe copiarse a `frontend/.env.local`. Ese archivo está ignorado por git y no contiene secretos. Si `frontend/.env.local` no existe, el cliente usa `http://localhost:8000` como valor por defecto, pero se recomienda configurarlo explícitamente.
+
+## Flujo de uso
+
+1. Abrir **Cartera** y subir un CSV o pulsar **Usar cartera de ejemplo**.
+2. El backend valida el esquema y genera un reporte de calidad por columna.
+3. Al completarse el trabajo se muestran KPIs, gráficos y la tabla paginada.
+4. La tabla permite filtrar por PD mínima, estado marcado, ordenar y descargar CSV.
+5. **Crédito individual** estima PD, LGD, EAD, ECL y banda de riesgo.
+6. **Modelo** muestra versión, seed, supuestos, métricas y limitaciones.
+7. **Historial** lista trabajos previos y permite descargar sus resultados.
+
+### Formato del CSV de cartera
+
+- Una fila por crédito.
+- Debe contener las 16 columnas de entrada del modelo.
+- `id` es opcional; si no existe, el backend genera `credito_id`.
+- No se deben incluir variables de desempeño posteriores al desembolso.
+- Si faltan columnas obligatorias, el trabajo falla con un error claro; no se inventan datos.
+
+Columnas de entrada:
+
+```text
+funded_amnt, interest_rate, loan_term_months, monthly_payment, annual_income,
+dept_paym_income_ratio, issue_date_year, earliest_cr_line_year,
+num_rev_trades_op_in_24mths, num_inq_in_6mths, num_inq,
+num_derogatory_pub_rec, mths_since_last_installment_acc_op,
+bal_to_cred_lim, max_bal_owed, used_credit_share
+```
+
+## API
+
+| Método | Ruta | Descripción |
 |---|---|---|
-| **PD** (*Probability of Default*) | Probabilidad de que el cliente incumpla en un horizonte dado (12 meses o toda la vida del crédito) | 0 – 100 % |
-| **LGD** (*Loss Given Default*) | Porcentaje de la exposición que se pierde si hay default, después de recuperaciones | 0 – 100 % |
-| **EAD** (*Exposure at Default*) | Monto expuesto al momento del default | Valor monetario |
+| GET | `/health` | Estado del servicio y disponibilidad del modelo |
+| GET | `/model/info` | Versión, seed, métricas, supuestos, rangos y features |
+| POST | `/predict` | Predicción individual o lote de hasta 1.000 créditos |
+| POST | `/portfolio` | Carga CSV y encola un trabajo en segundo plano |
+| GET | `/jobs/{job_id}` | Estado, progreso, totales y error del trabajo |
+| GET | `/jobs/{job_id}/summary` | Agregados para los gráficos y top de créditos |
+| GET | `/jobs/{job_id}/rows` | Filas paginadas con filtros y ordenamiento |
+| GET | `/jobs/{job_id}/download` | Descarga del CSV de resultados |
+| GET | `/history` | Historial de trabajos |
 
-Para horizontes de múltiples periodos, el ECL se descuenta a valor presente:
+Estados de un trabajo: `queued`, `running`, `done`, `error`.
 
-```
-ECL = Σ  PD_t × LGD_t × EAD_t × DF_t
-      t
-```
+`GET /jobs/{job_id}/rows` acepta:
 
-donde `DF_t` es el factor de descuento del periodo `t` (normalmente la tasa efectiva del crédito).
-
-### 🧩 Ejemplo ilustrativo
-
-| PD | LGD | EAD | **ECL** |
-|---|---|---|---|
-| 5 % | 45 % | $10,000 | 0.05 × 0.45 × 10,000 = **$225** |
-
-### 🎯 ¿Dónde encaja este proyecto?
-
-Este proyecto se centra en el componente **PD**, el más intensivo en modelado estadístico. La salida del modelo (probabilidad de default por crédito) es el insumo directo para completar el cálculo del ECL al combinarse con LGD y EAD.
-
-```mermaid
-flowchart LR
-    A[📥 Datos de cartera] --> B[🧹 Limpieza y EDA]
-    B --> C[🧮 WoE + selección de variables]
-    C --> D[🤖 Regresión logística]
-    D --> E[📈 PD por crédito]
-    E --> F[💵 ECL = PD × LGD × EAD]
-    F --> G[🛡️ Provisiones y decisiones de cartera]
+```text
+page=1
+page_size=25        # 1..200
+sort_by=pd
+order=desc
+min_pd=0
+marcado=true|false
 ```
 
----
+`POST /predict` recibe:
 
-## 📊 Dataset
-
-| Característica | Detalle |
-|---|---|
-| 🗂️ Fuente | [Lending Club Loan Data (cleared)](https://www.kaggle.com/datasets/db0boy/lending-club-loan-data-cleared/data), Kaggle |
-| 📦 Registros totales | **2,139,643** |
-| 🎯 Variable objetivo | `y` (binaria: default / no default) |
-| ⚖️ Balance de clases | ~**13 %** de casos positivos (desbalanceado) |
-| 🧬 Tipo de variables | Financieras, de historial crediticio y de morosidad |
-| 🔀 Split | Estratificado por `y`, `test_size=0.2`, `random_state=42` |
-| 🏋️ Train / 🧪 Test | 1,711,714 / 427,929 filas (13.07 % de default en ambos) |
-
-**Supuesto temporal:** las variables tipo `_6mths`, `_12mths` y `_24mths` se miden hacia atrás desde la **fecha de originación** del crédito.
-
----
-
-## 🧮 WoE e IV en pocas palabras
-
-Son dos métricas clásicas de los **scorecards de crédito**. Se calculan dividiendo cada variable en grupos (*bins*) y comparando, dentro de cada grupo, cuántos clientes pagaron y cuántos cayeron en default.
-
-### 🔁 WoE (Weight of Evidence)
-
-Mide qué tan "bueno" o "malo" es un grupo de clientes respecto al total:
-
-```
-WoE = ln( %buenos del grupo / %malos del grupo )
+```json
+{
+  "creditos": [
+    {
+      "funded_amnt": 12000,
+      "interest_rate": 13.5,
+      "loan_term_months": 36,
+      "monthly_payment": 406.55,
+      "annual_income": 65000,
+      "dept_paym_income_ratio": 18.5,
+      "issue_date_year": 2016,
+      "earliest_cr_line_year": 2008,
+      "num_rev_trades_op_in_24mths": 4,
+      "num_inq_in_6mths": 1,
+      "num_inq": 2,
+      "num_derogatory_pub_rec": 0,
+      "mths_since_last_installment_acc_op": 18,
+      "bal_to_cred_lim": 42,
+      "max_bal_owed": 14500,
+      "used_credit_share": 38
+    }
+  ]
+}
 ```
 
-| WoE del grupo | Lectura |
-|---|---|
-| **Positivo** | Predominan los buenos pagadores |
-| **Cercano a 0** | Grupo neutro |
-| **Negativo** | Predominan los clientes en default |
+La respuesta incluye resultados por crédito, totales y advertencias.
 
-📌 **Ejemplo ilustrativo:** si un tramo de `interest_rate` concentra el 10 % de los buenos y el 25 % de los malos, su WoE es ln(0.10 / 0.25) ≈ **-0.92**, es decir, un grupo de mayor riesgo.
+## Modelo
 
-**¿Para qué se usa?** Cada valor original se reemplaza por el WoE de su grupo. Así se obtiene una relación monótona con el riesgo, se tratan de forma uniforme los nulos, outliers y centinelas, y las variables quedan listas para una regresión logística interpretable.
+- Probabilidad de default (PD) mediante regresión logística con `class_weight="balanced"`.
+- Variables transformadas con WoE; selección con IV, correlación de Spearman y VIF.
+- 16 columnas de entrada; 14 features de PD después de las transformaciones.
+- `credit_history_length = (issue_date_year - earliest_cr_line_year).clip(lower=0)`.
+- `annual_income` limitado a 1.000.000.
+- Imputaciones fijas: `mths_since_last_installment_acc_op` → 999; `num_rev_trades_op_in_24mths` y `num_inq` → 0; `max_bal_owed` → mediana de train; `bal_to_cred_lim` → media de train.
+- Outliers: sin capping IQR; se conservan los centinelas 999.
+- Rejilla de negocio: `q = 0.10..0.40` (paso 0.01) y `s = 0.60..1.00` (paso 0.05).
+- Configuración calibrada en entrenamiento: `q = 0.21`, `s = 0.95`, `criterio = "pd_por_monto"`.
+- `q` y `s` se leen de `models/metadata.json`; no están hardcodeados en la API.
 
-### 📏 IV (Information Value)
+Métricas de test:
 
-Resume el poder predictivo de **toda una variable** sumando el aporte de cada grupo:
+| Métrica | Valor |
+|---|---:|
+| AUC-ROC | 0.7065 |
+| Gini | 0.4130 |
+| KS | 0.3002 |
+| ECL / ECL real | 1.9113 |
+| Violaciones | 8.9662 % |
+| MAE | 2950.90 |
 
+La interpretación completa y el análisis del notebook están en `Resumen_Estimacion_ECL.md` y `DETALLE_TECNICO.md`.
+
+## Estructura
+
+```text
+.
+├── api/                     # FastAPI, schemas, settings, jobs
+├── data/
+│   ├── raw/                 # X.csv y target.csv (no versionados)
+│   ├── samples/             # cartera_demo.csv
+│   └── predictions/         # resultados de la API y CLI
+├── frontend/
+│   ├── public/              # cartera_demo.csv generada
+│   └── src/
+│       ├── app/             # páginas App Router
+│       ├── components/      # layout, cartera, crédito, modelo, historial
+│       └── lib/             # API, tipos, formato y metadata
+├── models/                  # artefactos joblib/json (no versionados)
+├── scripts/make_sample.py
+├── src/ecl/                 # configuración, preprocesamiento, modelo, métricas
+├── tests/
+├── train.py
+├── predict.py
+├── requirements.txt
+└── .env.example
 ```
-IV = Σ ( %buenos − %malos ) × WoE
+
+## Pruebas y verificación
+
+Backend:
+
+```powershell
+python -m pytest -q
 ```
 
-Cuanto mayor es el IV, mejor separa la variable a buenos y malos pagadores. En este proyecto se usó para **ranking y filtrado** de variables (umbral IV > 0.01). Sus rangos de interpretación están en la guía de la sección de desarrollo.
+Frontend:
 
----
+```powershell
+cd frontend
+npm run lint
+npm run typecheck
+npm run build
+```
 
-## 🔬 Desarrollo del notebook
+Regenerar los tipos TypeScript después de cambiar la API:
 
-### 1️⃣ Split antes de transformar
+```powershell
+cd frontend
+npm run generate:types
+```
 
-El dataset se divide en train y test **antes** de cualquier transformación, para evitar *data leakage*. Todo el análisis exploratorio y los parámetros aprendidos salen únicamente de train.
+Verificación E2E manual:
 
-### 2️⃣ Tratamiento de valores faltantes
+1. Iniciar la API y el frontend.
+2. Subir `data/samples/cartera_demo.csv` desde la interfaz.
+3. Confirmar que aparece el reporte de calidad, los gráficos y la tabla.
+4. Ejecutar la misma cartera por CLI:
 
-El criterio fue **no inventar actividad** que probablemente nunca ocurrió:
+```powershell
+python predict.py --input data/samples/cartera_demo.csv
+```
 
-| Grupo de variables | Tratamiento | Razonamiento |
+5. Comparar el ECL final y el porcentaje de marcados con los de la interfaz.
+6. Confirmar que se generaron CSV, Parquet y JSON en `data/predictions/`.
+
+Resultado de la última verificación local: 1.000 créditos, ECL final total `2.350.085,59` y `18,9 %` de créditos marcados, coincidentes entre la API y `predict.py`.
+
+## Datos y artefactos
+
+No se versionan datos ni artefactos:
+
+- `data/` está ignorado.
+- `models/` está ignorado.
+- `frontend/public/cartera_demo.csv` está ignorado.
+- `frontend/.env.local` está ignorado.
+
+Por eso, un clon limpio necesita los CSV originales para entrenar y `python scripts/make_sample.py` para habilitar la cartera de ejemplo.
+
+## Limitaciones
+
+- Ejecución local; no incluye autenticación, base de datos, Docker ni despliegue cloud.
+- No es un sistema de decisión crediticia ni un detector de fraude.
+- El modelo se entrenó con datos históricos de Lending Club y hereda sus sesgos y limitaciones.
+- La calidad de las predicciones depende de que el CSV tenga el mismo esquema y la misma semántica temporal que los datos de entrenamiento.
+- Sin monitoreo de drift ni reentrenamiento automático.
+
+## Solución de problemas
+
+| Síntoma | Causa probable | Solución |
 |---|---|---|
-| `mths_since_*` (4 variables) | Flag `nunca_*` + centinela **999** | Si nunca ocurrió, equivale a "hace muchísimo tiempo" |
-| `num_*` (6 variables de conteo) | Imputación con **0** | Lo más razonable es que nunca hubo actividad; una media implicaría actividad y debilitaría el coeficiente |
-| `max_bal_owed` | **Mediana** | Distribución más asimétrica |
-| `bal_to_cred_lim` | **Media** | Distribución más simétrica |
-| `emp_title` | Flag `sin_emp_title` y se elimina la columna | Un nulo puede significar desempleo |
-| `emp_length` | Se convierte a `emp_length_num` (nulos en 0) | Numérica es más útil que categórica |
-
-### 3️⃣ Tratamiento de outliers
-
-| Grupo | Decisión |
-|---|---|
-| Variables con centinela 999 y conteos de morosidad | Sin modificar, para no perder información |
-| 7 variables continuas casi simétricas (`interest_rate`, `monthly_payment`, `funded_amnt`, etc.) | **Capping 1.5 × IQR** |
-| `annual_income` > $1M (574 registros) | Prueba z de proporciones (p = 0.003): hay diferencia, pero se conservan limitados a $1M |
-
-### 4️⃣ EDA frente al default y control de leakage
-
-- 📦 Boxplots de las variables numéricas separados por `y`.
-- 🔎 Se detectó que el centinela 999 de `mths_since_recent_bankcard_delinq` concentra ~87 % de `y=0`, lo que corrige la lectura engañosa del boxplot.
-- 📆 Se verificó que no hay saltos abruptos por año de emisión.
-- 🚫 Se excluyeron variables posteriores al desembolso (`princ_rec`, `interest_rec`, `late_fees_rec`, entre otras) con un `assert` de seguridad.
-
-### 5️⃣ Selección de variables
-
-| Etapa | Criterio | Resultado |
-|---|---|---|
-| **WoE / IV** | Conservar variables con IV > 0.01 | 17 variables (la más fuerte: `interest_rate`, IV = 0.446) |
-| **Correlación de Spearman** | Eliminar la de menor IV en pares con \|ρ\| > 0.7 | Salieron 4 variables redundantes |
-| **VIF** | Revisar multicolinealidad | **VIF máximo = 1.97** ✅ |
-| **Variables adicionales** | Evaluar con IV | Se suman `loan_term_months` (0.073) y `credit_history_length` (0.011); se descartan `emp_length_num` y `region_code` |
-
-🏁 **Set final: 15 variables**, con **VIF máximo de 1.98**.
-
-### 📚 Guía de interpretación del IV
-
-| IV | Poder predictivo |
-|---|---|
-| < 0.02 | Débil / no útil |
-| 0.02 – 0.1 | Débil a medio |
-| 0.1 – 0.3 | Medio |
-| 0.3 – 0.5 | Fuerte |
-| > 0.5 | Muy fuerte (revisar posible fuga de información) |
-
----
-
-## ⚙️ Preprocesador y WoE Encoder
-
-El feature engineering se estructuró como clases con interfaz **`fit` / `transform`**, de modo que el mismo código corra en entrenamiento y en producción.
-
-### 🔁 `WOEEncoderV2`
-
-Calcula el **Weight of Evidence** de cada grupo a partir de train y lo aplica igual a train y test:
-
-```
-WoE = ln( %buenos / %malos )      # con suavizado de Laplace
-```
-
-- Se ajusta **solo con train** para evitar *data leakage*.
-- Bins manuales para conteos y centinelas, **deciles** para variables continuas y categorías directas para `loan_term_months`.
-- Soporta variables categóricas y aplica un valor de respaldo (WoE = 0) ante valores fuera de rango. En test **nunca se activó**: todos los valores cayeron en bins reales de train.
-
-### 🧱 `PreprocesadorECL`
-
-| Tipo | Qué hace |
-|---|---|
-| 🔒 **Tipo A (fijas)** | `credit_history_length`, nulos → 999 / 0 según la variable, límite de `annual_income` en $1M |
-| 📚 **Tipo B (aprendidas en train)** | Mediana de `max_bal_owed`, media de `bal_to_cred_lim` y mapas WoE |
-
-```python
-prep = PreprocesadorECL()
-prep.fit(train_df)                  # aprende parámetros solo con train
-
-train_woe = prep.transform(train_df)
-test_woe  = prep.transform(test_df) # test crudo, mismas transformaciones
-
-features = prep.get_features_finales()
-X_train, y_train = train_woe[features], train_woe['y']
-X_test,  y_test  = test_woe[features],  test_woe['y']
-```
-
-✅ **Verificaciones:** sin `NaN` ni `Inf` en train y test, shapes `(1,711,714 × 15)` y `(427,929 × 15)`, y misma tasa de default en ambos conjuntos.
-
----
-
-## 🏆 Resultados del modelo
-
-```python
-LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
-```
-
-| Métrica | Train | Test |
-|---|---|---|
-| **AUC-ROC** | 0.7056 | **0.7065** |
-| **Gini** | 0.4112 | **0.4129** |
-| **KS** | 0.2981 | **0.3005** |
-
-- ✅ **Sin sobreajuste:** las métricas de train y test son prácticamente idénticas.
-- ✅ **Coeficientes coherentes:** 14 de 15 variables tienen el signo esperado (negativo, porque el WoE se define como `ln(%buenos/%malos)`). La variable con mayor peso es `interest_rate` (-0.82).
-- 🔍 **Punto a revisar:** `num_open_trades_in_6mths` tiene un coeficiente positivo muy pequeño (+0.04), candidato a reagrupar sus bins.
-
-### 📅 Estabilidad temporal
-
-AUC en test por año de emisión: de **0.64 en 2007** a **0.70 en 2018**, con mejora gradual en los años recientes.
-
----
-
-## 🚀 Despliegue con MLOps
-
-> 📝 Esta sección describe la arquitectura objetivo. El preprocesador ya está diseñado con interfaz `fit/transform` justamente para facilitar estos pasos.
-
-```mermaid
-flowchart LR
-    A[💻 Notebook] --> B[📦 Pipeline serializado<br/>Preprocesador + Modelo]
-    B --> C[🧪 Validación de esquema y tests]
-    C --> D[🐳 Contenedor / API de scoring]
-    D --> E[☁️ Despliegue en la nube]
-    E --> F[📡 Monitoreo]
-    F -->|Drift / degradación| G[🔄 Reentrenamiento]
-    G --> B
-```
-
-| Etapa | Qué incluye |
-|---|---|
-| 📦 **Empaquetado** | Preprocesador + modelo en un único artefacto serializado (`joblib`) |
-| 🧪 **Validación** | Chequeo de columnas, tipos y rangos antes de `transform` |
-| 🗂️ **Versionado** | Control de versiones de código, datos, preprocesador y modelo |
-| 🌐 **Servicio** | API de scoring (por ejemplo FastAPI) en contenedor Docker |
-| ☁️ **Plataforma** | Evaluación de **AWS SageMaker** frente a **Azure Machine Learning** |
-| 📡 **Monitoreo** | **PSI** para drift de variables, AUC/KS en producción, calibración de PD |
-| 🔄 **Reentrenamiento** | Disparado por drift o caída de desempeño |
-
----
-
-## 🛠️ Stack tecnológico
-
-| Área | Herramientas |
-|---|---|
-| 🐍 Lenguaje | Python, SQL |
-| 📊 Análisis | pandas, NumPy, SciPy, statsmodels |
-| 📈 Visualización | Matplotlib, Seaborn |
-| 🤖 Modelado | scikit-learn (regresión logística) |
-| 🧮 Riesgo de crédito | WoE, IV, VIF, Spearman |
-| 📥 Datos | Kaggle (`kagglehub`) |
-| 🚀 MLOps | joblib, Docker, FastAPI, SageMaker / Azure ML |
-| 📓 Entorno | Jupyter Notebook |
-
----
-
-## 🗺️ Roadmap
-
-- [x] Split estratificado y control de data leakage
-- [x] Tratamiento de valores faltantes y outliers
-- [x] EDA frente a la variable objetivo
-- [x] WoE / IV, correlación (Spearman) y VIF
-- [x] `WOEEncoderV2` y `PreprocesadorECL`
-- [x] Entrenamiento de la regresión logística
-- [x] Evaluación: AUC-ROC, Gini, KS y AUC por año
-- [ ] Revisar `num_open_trades_in_6mths` (signo del coeficiente)
-- [ ] Incorporar el capping IQR dentro del preprocesador
-- [ ] Calibración de PD y cálculo de ECL (PD × LGD × EAD)
-- [ ] Empaquetado y despliegue con MLOps
-- [ ] Monitoreo y reentrenamiento
-
----
-
-## 👤 Autor
-
-**Alex** · 🇪🇨 Ecuador
-🤖 AI / Data Scientist / Blockchain Developer · MLOps · Analytics
-🐍 Python · SQL · Electrónica
-
-📫s **Contacto:** _agrega aquí tu LinkedIn, GitHub y correo_
-
----
-
-⭐ *Si este proyecto te resulta útil, no dudes en dejar una estrella en el repositorio.*
+| El frontend no conecta con la API | API detenida o URL incorrecta | Verificar `http://localhost:8000/health` y `frontend/.env.local` |
+| El botón de ejemplo devuelve 404 | Falta la muestra pública | Ejecutar `python scripts/make_sample.py` |
+| Error al importar el modelo | Faltan artefactos en `models/` | Ejecutar `python train.py` con los datos disponibles |
+| Error de CORS | Frontend en otro puerto | Usar el puerto 3000 o ajustar CORS en `api/settings.py` |
+| Cambió un contrato de la API | Tipos TypeScript desactualizados | Ejecutar `npm run generate:types` |
+| Faltan columnas en la carga | CSV no cumple el esquema | Revisar el reporte de calidad y las 16 columnas requeridas |

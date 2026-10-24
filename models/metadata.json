@@ -1,0 +1,173 @@
+{
+  "version_modelo": "1.0.0",
+  "seed": 42,
+  "fecha_entrenamiento": "2026-10-23T00:00:20.544635+00:00",
+  "librerias": {
+    "python": "3.14.0",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0",
+    "pyarrow": "25.0.1"
+  },
+  "criterio": "pd_por_monto",
+  "margen": {
+    "q": 0.21,
+    "s": 0.95,
+    "corte": 1.8645237731405286e-05,
+    "total": 4241651699.2951107,
+    "ratio": 1.9071083424440918,
+    "viol": 0.08951203296812435
+  },
+  "cortes_bandas": [
+    0.035044819295867745,
+    0.053794934316279075,
+    0.07266273657132453,
+    0.09193374944280623,
+    0.11290940329173482,
+    0.13686849658450276,
+    0.16600685456454542,
+    0.20173022002222424,
+    0.2522261771571488
+  ],
+  "columnas_entrada": [
+    "funded_amnt",
+    "interest_rate",
+    "loan_term_months",
+    "monthly_payment",
+    "annual_income",
+    "dept_paym_income_ratio",
+    "issue_date_year",
+    "earliest_cr_line_year",
+    "num_rev_trades_op_in_24mths",
+    "num_inq_in_6mths",
+    "num_inq",
+    "num_derogatory_pub_rec",
+    "mths_since_last_installment_acc_op",
+    "bal_to_cred_lim",
+    "max_bal_owed",
+    "used_credit_share"
+  ],
+  "columnas_pd": [
+    "num_rev_trades_op_in_24mths_woe",
+    "num_inq_in_6mths_woe",
+    "num_inq_woe",
+    "num_derogatory_pub_rec_woe",
+    "mths_since_last_installment_acc_op_woe",
+    "interest_rate_woe",
+    "bal_to_cred_lim_woe",
+    "max_bal_owed_woe",
+    "dept_paym_income_ratio_woe",
+    "used_credit_share_woe",
+    "annual_income_woe",
+    "monthly_payment_woe",
+    "loan_term_months_woe",
+    "credit_history_length_woe"
+  ],
+  "train_size": 1711714,
+  "test_size": 427929,
+  "rangos_entrenamiento": {
+    "funded_amnt": {
+      "min": 500.0,
+      "max": 40000.0
+    },
+    "interest_rate": {
+      "min": 5.31,
+      "max": 30.99
+    },
+    "loan_term_months": {
+      "min": 36.0,
+      "max": 60.0
+    },
+    "monthly_payment": {
+      "min": 4.93,
+      "max": 1719.83
+    },
+    "annual_income": {
+      "min": 1900.0,
+      "max": 110000000.0
+    },
+    "dept_paym_income_ratio": {
+      "min": 0.0,
+      "max": 49.96
+    },
+    "issue_date_year": {
+      "min": 2007.0,
+      "max": 2018.0
+    },
+    "earliest_cr_line_year": {
+      "min": 1933.0,
+      "max": 2015.0
+    },
+    "num_rev_trades_op_in_24mths": {
+      "min": 0.0,
+      "max": 60.0
+    },
+    "num_inq_in_6mths": {
+      "min": 0.0,
+      "max": 33.0
+    },
+    "num_inq": {
+      "min": 0.0,
+      "max": 48.0
+    },
+    "num_derogatory_pub_rec": {
+      "min": 0.0,
+      "max": 86.0
+    },
+    "mths_since_last_installment_acc_op": {
+      "min": 0.0,
+      "max": 511.0
+    },
+    "bal_to_cred_lim": {
+      "min": 0.0,
+      "max": 239.0
+    },
+    "max_bal_owed": {
+      "min": 0.0,
+      "max": 1170668.0
+    },
+    "used_credit_share": {
+      "min": 0.0,
+      "max": 366.6
+    }
+  },
+  "metricas_holdout": {
+    "n": 427929,
+    "auc": 0.7064854776260864,
+    "gini": 0.41297095525217276,
+    "ks": 0.30019442201402147,
+    "precision": 0.19424548447370762,
+    "recall": 0.3121927676384892,
+    "especificidad": 0.8052426704230804,
+    "exactitud": 0.7407864388718689,
+    "lift": 1.4858566027089934,
+    "tp": 17465,
+    "tn": 299539,
+    "fp": 72447,
+    "fn": 38478,
+    "pct_marcados": 0.21010962098852848,
+    "mae": 2950.901211064962,
+    "wape": 2.2738882351315195,
+    "mape": 0.9791854011607779,
+    "ape_mediano": 0.8180018604015421,
+    "ecl_total": 1061427948.5901381,
+    "ecl_real_total": 555337850.3129377,
+    "ratio_ecl_real": 1.9113192950777875,
+    "violaciones": 0.0896620701097612,
+    "violaciones_pct": 8.96620701097612,
+    "r1_cobertura": true,
+    "r2_violaciones": true,
+    "cumple_restricciones": true
+  },
+  "robustez_bootstrap": {
+    "ratio_medio": 1.911196027288965,
+    "ratio_p05": 1.8959671111178784,
+    "ratio_p50": 1.9111303914103097,
+    "ratio_p95": 1.9268732696175574,
+    "p_ratio_menor_1": 0.0,
+    "violaciones_media": 0.08966056051354312,
+    "violaciones_p95": 0.09039431774897237,
+    "n_bootstrap": 500
+  }
+}

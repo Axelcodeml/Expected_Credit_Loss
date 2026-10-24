@@ -1,18 +1,30 @@
-# Ignorar carpetas de datos pesados
-data/
-
-models/*.csv
-#models/*.pkl
-models/*.h5
+# Ignorar carpetas de datos pesados y artefactos de modelos
+data/predictions
+data/raw
+data/uploads
+*.joblib
 
 # Ignorar el entorno virtual de Python
 .venv/
 venv/
 env/
 
-# Ignorar archivos temporales de Jupyter Notebooks
+# Ignorar archivos temporales de Python y Jupyter Notebooks
+__pycache__/
+*.py[cod]
+.pytest_cache/
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
 
+# Ignorar dependencias y artefactos del frontend
+node_modules/
+frontend/.next/
+frontend/out/
+
 # Archivos de configuración local y credenciales secretas
-.env 
+.env
+.env.local
+.env.*.local
+
+# Muestra de cartera servida por el frontend
+frontend/public/cartera_demo.csv
